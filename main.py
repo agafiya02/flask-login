@@ -1,9 +1,11 @@
 from flask import Flask, render_template, redirect
 from data import session
 from data import users
+from data import jobs
+from data.jobs import Jobs
 import datetime
 from flask_login import LoginManager, login_user
-from forms.user import RegisterForm, LoginForm
+from forms.user import RegisterForm, LoginForm, AddJobsForm
 
 app = Flask(__name__)
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(
@@ -61,6 +63,35 @@ def reqister():
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
 
+
+@app.route('/')
+def main():
+    db_sess = session.create_session()
+    jobs = db_sess.query(Jobs)
+    return render_template('jobs.html', title='Работа', jobs=jobs)
+
+
+@app.route('/addjob', methods=['GET', 'POST'])
+def addjob():
+    form = AddJobsForm()
+    if form.validate_on_submit():
+        db_sess = session.create_session()
+
+        job = jobs.Jobs(
+            job=form.job.data,
+            team_leader=form.team_leader.data,
+            work_size=form.work_size.data,
+            collaborators=form.collaborators.data
+        )
+
+        db_sess.add(job)
+        db_sess.commit()
+        return redirect("/")
+
+    return render_template('job.html', title='Adding a job', form=form)
+
+
+# search for water below the surface
 
 if __name__ == '__main__':
     app.run(port=8080, host='127.0.0.1')
