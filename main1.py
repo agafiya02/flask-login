@@ -6,6 +6,7 @@ from data.jobs import Jobs
 import datetime
 from flask_login import LoginManager, login_user
 from forms.user import RegisterForm, LoginForm, AddJobsForm
+from API import news_api, jobs_api
 
 app = Flask(__name__)
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(
@@ -73,9 +74,26 @@ def main():
 
 @app.route('/addjob', methods=['GET', 'POST'])
 def addjob():
+    # search for water below the surface
     form = AddJobsForm()
+    if form.validate_on_submit():
+        db_sess = session.create_session()
+
+        job = jobs.Jobs(
+            job=form.job.data,
+            team_leader=form.team_leader.data,
+            work_size=form.work_size.data,
+            collaborators=form.collaborators.data
+        )
+
+        db_sess.add(job)
+        db_sess.commit()
+        return redirect("/")
+
     return render_template('job.html', title='Adding a job', form=form)
 
 
+app.register_blueprint(jobs_api.jobs_blueprint)
+
 if __name__ == '__main__':
-    app.run(port=8080, host='127.0.0.1')
+    app.run(port=5000, host='127.0.0.1')
