@@ -17,7 +17,7 @@ def get_jobs():
     return jsonify(
         {
             'jobs':
-                [item.to_dict() for item in jobs]
+                [item.to_dict(only=()) for item in jobs]
         }
     )
 
