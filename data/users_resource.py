@@ -15,9 +15,10 @@ class UsersResource(Resource):
     def get(self, users_id):
         abort_if_users_not_found(users_id)
         session1 = session.create_session()
-        users = session1.query(User).get(users_id)
-        return jsonify({'users': users.to_dict(
-            only=('title', 'content', 'user_id', 'is_private'))})
+        user = session1.query(User).get(users_id)
+        return jsonify({
+            'users': user.to_dict(only=())
+        })
 
     def delete(self, users_id):
         abort_if_users_not_found(users_id)
@@ -33,7 +34,7 @@ parser.add_argument('surname', required=True)
 parser.add_argument('name', required=True)
 parser.add_argument('age', required=True)
 parser.add_argument('position', required=True)
-parser.add_argument('speciality', required=True)
+parser.add_argument('is_private', required=True)
 parser.add_argument('address', required=True)
 parser.add_argument('about', required=True)
 parser.add_argument('email', required=True)
@@ -45,18 +46,25 @@ class UsersListResource(Resource):
     def get(self):
         session1 = session.create_session()
         users = session1.query(User).all()
-        return jsonify({'users': [item.to_dict(
-            only=('title', 'content', 'user.name')) for item in users]})
+        return jsonify(
+            {'users':
+                [item.to_dict(only=()) for item in users]}
+        )
 
     def post(self):
         args = parser.parse_args()
         session1 = session.create_session()
         users = User(
-            title=args['title'],
-            content=args['content'],
-            user_id=args['user_id'],
-            is_published=args['is_published'],
-            is_private=args['is_private']
+            name=args['name'],
+            surname=args['surname'],
+            age=args['age'],
+            position=args['position'],
+            is_private=args['is_private'],
+            address=args['address'],
+            about=args['about'],
+            email=args['email'],
+            hashed_password=args['hashed_password'],
+            modified_date=args['modified_date']
         )
         session1.add(users)
         session1.commit()
