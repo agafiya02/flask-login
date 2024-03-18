@@ -1,4 +1,6 @@
 from flask import Flask, render_template, redirect
+from flask_restful import Api
+from data import users_resource
 from data import session
 from data import users
 from data import jobs
@@ -9,6 +11,7 @@ from forms.user import RegisterForm, LoginForm, AddJobsForm
 from API import news_api, jobs_api
 
 app = Flask(__name__)
+api = Api(app)
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(
     days=365
 )
@@ -94,6 +97,9 @@ def addjob():
 
 
 app.register_blueprint(jobs_api.jobs_blueprint)
+
+api.add_resource(users_resource.UsersListResource, '/api/v2/users')
+api.add_resource(users_resource.UsersResource, '/api/v2/users/<int:users_id>')
 
 if __name__ == '__main__':
     app.run(port=5000, host='127.0.0.1')
